@@ -1,0 +1,21 @@
+version: "2"
+services:
+  jupyter:
+    build:
+     context: Jupyter
+     dockerfile: Dockerfile
+    volumes:
+      - ./mountpoint:/home/myproject
+    ports:
+      - "8888:8888"
+    depends_on:
+      db:
+        condition: service_started
+  db:
+    build:
+      context: DB
+      dockerfile: Dockerfile
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+      - POSTGRES_DB=db
