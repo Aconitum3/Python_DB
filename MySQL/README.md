@@ -1,7 +1,7 @@
 # PythonでMySQLを使用する
 
 ## 環境構築の流れ
-以下のようなcsvファイルをDBのテーブルに挿入し、Pythonからアクセスしたい。
+以下のようなcsvファイルをDBのテーブルに挿入し、JupyterLabからアクセスしたい。
 |id|name|
 |--|--|
 |1|Taro|
@@ -106,7 +106,7 @@ services:
      context: Jupyter
      dockerfile: Dockerfile
     volumes:
-      - ./mountpoint:/home
+      - ./mountpoint:/home/myproject
     ports:
       - "8888:8888"
     depends_on:
@@ -119,7 +119,7 @@ services:
     environment:
       - MYSQL_ROOT_PASSWORD=root
 ```
-作業ディレクトリ`/home`をローカルディレクトリ`./mountpoint`にマウントしている。
+ディレクトリ`/home/myproject`をローカルディレクトリ`./mountpoint`にマウントしている。
 
 `jupyter`は`db`起動後に起動させたいため、`depends_on`で`condition: service_started`の設定をしている。
 
