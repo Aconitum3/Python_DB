@@ -48,7 +48,7 @@ FROM mysql:8.0
 COPY init.sh /docker-entrypoint-initdb.d/
 COPY mytable.csv /var/lib/mysql-files/
 ```
-MySQLイメージでは、`docker-entrypoint-init.d`下に`.sh`ファイルをおくと、コンテナ作成時に自動実行される。init.shは次のようになっている。
+MySQLイメージでは、`docker-entrypoint-init.d`下に`.sh`ファイルをおくと、コンテナ作成時に自動実行される。`init.sh`は次のようになっている。
 
 ```sh
 # init.sh
