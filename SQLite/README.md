@@ -21,7 +21,7 @@ $ git clone https://github.com/Aconitum3/Python_DB
 $ cd Python_DB/SQLite/project
 $ docker-compose up
 ```
-DBの起動を少し待った後、`myproject`ディレクトリ下の`main.R`を順に実行すれば、データを呼び出せる。
+DBの起動を少し待った後、`myproject`ディレクトリ下の`main.ipynb`を順に実行すれば、データを呼び出せる。
 
 ## 各要素の説明
 
@@ -32,7 +32,7 @@ project/
 　├ Dockerfile
 　├ init.sql
 　├ mytable.csv
-　├ packages.R
+　├ requirements.txt
 　├ docker-compose.yml
 　└ mountpoint/
 ```
@@ -40,7 +40,7 @@ project/
 ### `Dockerfile`
 
 ```Dockerfile
-FROM rocker/rstudio:4
+FROM python:3.7
 
 COPY init.sql ./
 COPY mytable.csv ./
@@ -49,13 +49,18 @@ RUN apt-get update \
   && apt-get install sqlite3 -y \
   && sqlite3 -init init.sql mydb
 
-COPY packages.R ./
+COPY requirements.txt ./
 
-EXPOSE 8787
+RUN pip install --upgrade pip \
+  && pip install -r requirements.txt
 
-RUN Rscript packages.R
+WORKDIR /home/
+
+EXPOSE 8888
+
+CMD jupyter lab --ip=0.0.0.0 --port=8888 --allow-root
 ```
-rocker/rstudioイメージをベースにsqlite3をインストールしている。`sqlite3 -init init.sql mydb`では、新規データベース`mydb`を作成し、`init.sql`で初期化している。`init.sql`は次のようになっている。
+pythonイメージをベースにsqlite3をインストールしている。`sqlite3 -init init.sql mydb`では、新規データベース`mydb`を作成し、`init.sql`で初期化している。`init.sql`は次のようになっている。
 
 ```sql
 # init.sql
@@ -64,24 +69,28 @@ rocker/rstudioイメージをベースにsqlite3をインストールしてい�
 ```
 テーブル`mytable`を作成し、`mytable.csv`のデータを取り込んでいる。
 
-packages.Rでは、RでSQLiteを扱うためのパッケージ`RSQLite`をインストールしている。ここで、`Rcpp`は`RSQLite`の依存パッケージである。
-```R
-# packages.R
+`pip install -r requirements.txt`では、各種主要パッケージと、PythonでSQLiteを扱うためのパッケージ`pysqlite3`をインストールしている。
+```t
+# requirements.txt
 
-install.packages(c("Rcpp", "RSQLite"))
+jupyterlab
+matplotlib
+numpy
+pandas
+pysqlite3
 ```
 
 ### `docker-compose.yml`
 ```yaml
 version: "2"
 services:
-  r:
+  jupyter:
     build:
-      context: .
-      dockerfile: Dockerfile
+     context: .
+     dockerfile: Dockerfile
     volumes:
-      - ./mountpoint:/home/rstudio/myproject
+      - ./mountpoint:/home/myproject
     ports:
-     - "8787:8787"
+      - "8888:8888"
 ```
-作業ディレクトリ`/home/rstudio`下の`myproject`ディレクトリをローカルディレクトリ`./mountpoint`にマウントしている。
+ディレクトリ`/home/myproject`をローカルディレクトリ`./mountpoint`にマウントしている。
